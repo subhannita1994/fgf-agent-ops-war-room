@@ -1,0 +1,88 @@
+bundle:
+  name: agent-ops-war-room
+
+variables:
+  team:
+    description: Team schema suffix, for example team1
+  catalog:
+    description: Target catalog for the workshop
+    default: serverless_nv91sa_catalog
+  warehouse_id:
+    description: SQL warehouse ID the app queries. Pass with --var warehouse_id=<id>; it differs per workspace.
+  schedule_pause_status:
+    description: Pause status for the refresh job schedule (UNPAUSED or PAUSED)
+    default: UNPAUSED
+
+resources:
+  pipelines:
+    sales_orders:
+      name: ${var.team}-sales-orders
+      catalog: ${var.catalog}
+      schema: ${var.team}
+      serverless: true
+      photon: true
+      continuous: false
+      channel: current
+      configuration:
+        catalog: ${var.catalog}
+        team: ${var.team}
+      libraries:
+        - file:
+            path: ./pipelines/sales_orders_sdp.py
+
+  jobs:
+    nightly_refresh:
+      name: ${var.team}-nightly-refresh
+      schedule:
+        quartz_cron_expression: 0 0 2 * * ?
+        timezone_id: America/Toronto
+        pause_status: ${var.schedule_pause_status}
+      tasks:
+        - task_key: daily_drop
+          notebook_task:
+            notebook_path: ./data/01_daily_drop.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+              team: ${var.team}
+        - task_key: refresh_pipeline
+          depends_on:
+            - task_key: daily_drop
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.sales_orders.id}
+
+  apps:
+    sales_agent:
+      name: ${var.team}-sales-agent
+      description: Sales Campaign and Opportunity Agent for the hackathon
+      source_code_path: ./app
+      # Each round ends by adding the new component here as a resource, granting it, and redeploying.
+      resources:
+        - name: sql-warehouse
+          description: SQL warehouse the agent's UC function tools run on
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE
+        - name: model-endpoint
+          description: Model endpoint the agent calls
+          serving_endpoint:
+            name: databricks-claude-sonnet-4-6
+            permission: CAN_QUERY
+      # Start command lives in app/app.yaml; per-team runtime settings live here.
+      config:
+        env:
+          - name: CATALOG
+            value: ${var.catalog}
+          - name: TEAM
+            value: ${var.team}
+          - name: SCHEMA
+            value: ${var.team}
+          - name: WAREHOUSE_ID
+            value: ${var.warehouse_id}
+          - name: MODEL_ENDPOINT
+            value: databricks-claude-sonnet-4-6
+
+targets:
+  dev:
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
