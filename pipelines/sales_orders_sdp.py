@@ -76,13 +76,16 @@ def silver_budget():
 @dlt.expect("valid_order_id", "order_id IS NOT NULL")
 @dlt.expect_or_fail("valid_ship_to", "ship_to_cust IS NOT NULL")
 def silver_sales_order_header():
-    return spark.read.table("bronze_sales_order_header").select(
-        "order_id",
-        F.col("order_ts").cast("timestamp").alias("order_ts"),
-        "ship_to_cust",
-        "status",
-        F.col("requested_delivery_date").cast("date").alias("requested_delivery_date"),
-        F.col("actual_ship_date").cast("date").alias("actual_ship_date"),
+    return (
+        spark.read.table("bronze_sales_order_header")
+        .select(
+            "order_id",
+            F.col("order_ts").cast("timestamp").alias("order_ts"),
+            F.coalesce(F.col("ship_to_cust"), F.col("ship_to_customer_id")).alias("ship_to_cust"),
+            "status",
+            F.col("requested_delivery_date").cast("date").alias("requested_delivery_date"),
+            F.col("actual_ship_date").cast("date").alias("actual_ship_date"),
+        )
     )
 
 
