@@ -8,7 +8,9 @@ variables:
     description: Target catalog for the workshop
     default: serverless_nv91sa_catalog
   warehouse_id:
-    description: SQL warehouse ID the app queries. Pass with --var warehouse_id=<id>; it differs per workspace.
+    description: Standard SQL warehouse (used for timing baseline)
+  rt_warehouse_id:
+    description: Real-Time SQL warehouse ID the app queries after Round 2. Pass with --var rt_warehouse_id=<id>.
   schedule_pause_status:
     description: Pause status for the refresh job schedule (UNPAUSED or PAUSED)
     default: UNPAUSED
@@ -21,7 +23,7 @@ resources:
       schema: ${var.team}
       serverless: true
       photon: true
-      continuous: false
+      continuous: true
       channel: current
       configuration:
         catalog: ${var.catalog}
@@ -44,11 +46,7 @@ resources:
             base_parameters:
               catalog: ${var.catalog}
               team: ${var.team}
-        - task_key: refresh_pipeline
-          depends_on:
-            - task_key: daily_drop
-          pipeline_task:
-            pipeline_id: ${resources.pipelines.sales_orders.id}
+        # Pipeline is now continuous — no explicit refresh_pipeline task needed.
 
   apps:
     sales_agent:
@@ -57,10 +55,10 @@ resources:
       source_code_path: ./app
       # Each round ends by adding the new component here as a resource, granting it, and redeploying.
       resources:
-        - name: sql-warehouse
-          description: SQL warehouse the agent's UC function tools run on
+        - name: rt-warehouse
+          description: Real-Time warehouse for low-latency agent queries
           sql_warehouse:
-            id: ${var.warehouse_id}
+            id: ${var.rt_warehouse_id}
             permission: CAN_USE
         - name: model-endpoint
           description: Model endpoint the agent calls
@@ -77,7 +75,7 @@ resources:
           - name: SCHEMA
             value: ${var.team}
           - name: WAREHOUSE_ID
-            value: ${var.warehouse_id}
+            value: ${var.rt_warehouse_id}
           - name: MODEL_ENDPOINT
             value: databricks-claude-sonnet-4-6
 

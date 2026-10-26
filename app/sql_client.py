@@ -13,6 +13,7 @@ def run_query(statement: str) -> list[dict]:
         server_hostname=_config.host.replace("https://", ""),
         http_path=f"/sql/1.0/warehouses/{os.environ['WAREHOUSE_ID']}",
         credentials_provider=lambda: _config.authenticate,
+        use_kernel=True,
     ) as connection:
         with connection.cursor() as cursor:
             cursor.execute(statement)

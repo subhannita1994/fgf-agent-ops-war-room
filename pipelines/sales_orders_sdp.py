@@ -102,7 +102,7 @@ def silver_sales_order_lines():
     )
 
 
-@dlt.table(comment="One row per order line with net price, margin, promo and lateness flags.")
+@dlt.table(comment="One row per order line with net price, margin, promo and lateness flags.", cluster_by=["brand", "order_date", "customer_id"])
 def gold_order_margin():
     h = spark.read.table("silver_sales_order_header")
     l = spark.read.table("silver_sales_order_lines")
