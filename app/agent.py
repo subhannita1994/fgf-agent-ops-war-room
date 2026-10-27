@@ -101,7 +101,9 @@ def _sql_literal(value: Any) -> str:
         return "true" if value else "false"
     if isinstance(value, (int, float)):
         return str(value)
-    return "'" + str(value).replace("'", "''") + "'"
+    # Databricks SQL reads 'D''Italiano' as two adjacent literals ('D' 'Italiano' -> 'DItaliano'),
+    # so escape with backslashes instead: backslash first, then the single quote.
+    return "'" + str(value).replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
 def _timed_query(statement: str, stats: dict[str, float]) -> list[dict]:
