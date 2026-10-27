@@ -1,19 +1,21 @@
 from __future__ import annotations
+import os, time
+from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.sql import StatementState
 
-import os
-
-from databricks import sql
-from databricks.sdk.core import Config
-
-_config = Config()
-
+_w = WorkspaceClient()
 
 def run_query(statement: str) -> list[dict]:
-    with sql.connect(
-        server_hostname=_config.host.replace("https://", ""),
-        http_path=f"/sql/1.0/warehouses/{os.environ['WAREHOUSE_ID']}",
-        credentials_provider=lambda: _config.authenticate,
-    ) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(statement)
-            return [row.asDict() for row in cursor.fetchall()]
+    resp = _w.statement_execution.execute_statement(
+        warehouse_id=os.environ["WAREHOUSE_ID"],
+        statement=statement,
+        wait_timeout="30s",
+    )
+    while resp.status.state in (StatementState.PENDING, StatementState.RUNNING):
+        time.sleep(0.5)
+        resp = _w.statement_execution.get_statement(resp.statement_id)
+    if resp.status.state != StatementState.SUCCEEDED:
+        err = resp.status.error.message if resp.status.error else resp.status.state
+        raise RuntimeError(f"Query failed: {err}")
+    cols = [c.name for c in resp.manifest.schema.columns]
+    return [dict(zip(cols, r)) for r in (resp.result.data_array or [])]
