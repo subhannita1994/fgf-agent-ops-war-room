@@ -3,3 +3,4 @@ databricks-sdk>=0.57.0
 databricks-sql-connector>=3.5.0
 openai>=1.54.0
 requests>=2.32.0
+psycopg2-binary>=2.9.0

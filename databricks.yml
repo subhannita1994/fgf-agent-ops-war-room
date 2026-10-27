@@ -65,6 +65,12 @@ resources:
           serving_endpoint:
             name: databricks-claude-sonnet-4-6
             permission: CAN_QUERY
+        - name: agent-memory-db
+          description: Lakebase database for durable conversation memory
+          postgres:
+            branch: projects/${var.team}-memory/branches/production
+            database: projects/${var.team}-memory/branches/production/databases/databricks-postgres
+            permission: CAN_CONNECT_AND_CREATE
       # Start command lives in app/app.yaml; per-team runtime settings live here.
       config:
         env:
