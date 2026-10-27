@@ -71,11 +71,12 @@ resources:
             name: databricks-claude-sonnet-4-6
             permission: CAN_QUERY
         - name: database
-          description: Lakebase database for multi-turn context retention
+          description: Lakebase database for durable chat history
           postgres:
-            branch: projects/${var.database_name}/branches/production
-            database: projects/${var.database_name}/branches/production/databases/databricks-postgres
+            branch: projects/${database_name}/branches/production
+            database: projects/${database_name}/branches/production/databases/databricks-postgres
             permission: CAN_CONNECT_AND_CREATE
+
       # Start command lives in app/app.yaml; per-team runtime settings live here.
       config:
         env:
@@ -89,6 +90,9 @@ resources:
             value: ${var.warehouse_id}
           - name: MODEL_ENDPOINT
             value: databricks-claude-sonnet-4-6
+          # Lakebase endpoint path used by app/memory.py to mint OAuth passwords; resolved from the "database" resource.
+          - name: LAKEBASE_ENDPOINT
+            value_from: database
 
 targets:
   dev:
