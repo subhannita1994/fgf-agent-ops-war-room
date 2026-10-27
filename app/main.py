@@ -6,6 +6,7 @@ import uuid
 import streamlit as st
 
 from agent import ask, healthcheck
+from memory import load_messages
 
 ALERT_CHECKS = 10
 ALERT_INTERVAL_SECONDS = 30
@@ -34,8 +35,29 @@ QUESTIONS = [
 ]
 
 
-session_id = st.session_state.setdefault("session_id", str(uuid.uuid4()))
-st.session_state.setdefault("messages", [])
+def current_user() -> str:
+    # Databricks Apps forwards the signed-in user's identity on every request.
+    headers = st.context.headers
+    return (
+        headers.get("X-Forwarded-Email")
+        or headers.get("X-Forwarded-Preferred-Username")
+        or headers.get("X-Forwarded-User")
+        or "anonymous"
+    ).lower()
+
+
+# Conversation history (stored in Lakebase by memory.py) is keyed by user + conversation id, so
+# participants sharing the same app URL never see each other's context. Without ?sid= in the URL
+# a user resumes their own default conversation, so a plain reload keeps context.
+user = current_user()
+conversation_id = st.query_params.get("sid") or "default"
+session_id = f"{user}/{conversation_id}"
+if st.session_state.get("session_id") != session_id:
+    st.session_state["session_id"] = session_id
+    st.session_state.pop("messages", None)
+if "messages" not in st.session_state:
+    # After a reload, redraw the earlier turns from durable history (footers are not stored).
+    st.session_state["messages"] = load_messages(session_id)
 
 
 def show_reply(result: dict, label: str | None = None) -> None:
@@ -77,6 +99,11 @@ with st.sidebar:
             st.session_state["prompt"] = prompt
     if st.button("Alert me if it gets worse", use_container_width=True) and st.session_state.get("last_prompt"):
         st.session_state["alert_prompt"] = st.session_state["last_prompt"]
+    if st.button("New conversation", use_container_width=True):
+        st.query_params["sid"] = str(uuid.uuid4())
+        st.session_state.pop("messages", None)
+        st.rerun()
+    st.caption(f"Signed in as {user}")
     if st.button("Run health check", use_container_width=True):
         st.session_state["health"] = healthcheck()
 
