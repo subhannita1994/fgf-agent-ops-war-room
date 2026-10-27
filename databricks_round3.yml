@@ -73,8 +73,8 @@ resources:
         - name: database
           description: Lakebase database for durable chat history
           postgres:
-            branch: projects/${database_name}/branches/production
-            database: projects/${database_name}/branches/production/databases/databricks-postgres
+            branch: projects/${var.database_name}/branches/production
+            database: projects/${var.database_name}/branches/production/databases/databricks-postgres
             permission: CAN_CONNECT_AND_CREATE
 
       # Start command lives in app/app.yaml; per-team runtime settings live here.
