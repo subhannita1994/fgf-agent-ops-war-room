@@ -14,7 +14,7 @@ variables:
     default: UNPAUSED
   database_name:
     description: Lakease database name
-    default: team0-memory
+    default: team2-memory
 
 resources:
   pipelines:
