@@ -12,7 +12,6 @@ ALERT_INTERVAL_SECONDS = 30
 
 st.set_page_config(page_title="FGF Sales Campaign Agent", layout="wide")
 
-# Mirrors QUESTIONS.md at the repo root (only the app/ folder is deployed).
 QUESTIONS = [
     "Q1. Which customers have open sales orders for ACE Bakery below margin right now, during today's promo — and alert me if it gets worse.",
     "Q2. How many ACE Bakery orders have come in since 9am today, and how does that compare with the same time last week?",
