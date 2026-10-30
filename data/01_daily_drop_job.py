@@ -13,8 +13,8 @@ DEFAULT_AS_OF = spark.sql(
 ).first()["d"]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--catalog", default="serverless_nv91sa_catalog")
-parser.add_argument("--team", default="team1")
+parser.add_argument("--catalog", default="adb_fgfworkshop")
+parser.add_argument("--team", default="team0")
 parser.add_argument("--as_of_date", default=DEFAULT_AS_OF)
 args, _ = parser.parse_known_args()
 

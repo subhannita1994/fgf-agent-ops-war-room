@@ -6,7 +6,7 @@ variables:
     description: Team schema suffix, for example team1
   catalog:
     description: Target catalog for the workshop
-    default: serverless_stable_flssl6_catalog
+    default: adb_fgfworkshop
   warehouse_id:
     description: SQL warehouse ID the app queries. Pass with --var warehouse_id=<id>; it differs per workspace.
   schedule_pause_status:
