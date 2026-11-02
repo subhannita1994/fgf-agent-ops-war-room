@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent Ops War Room — Participant Guide</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#161c24; --panel2:#1c242e; --ink:#e8edf2; --muted:#9fb0c0;
+    --line:#2a3542; --accent:#4db6ac; --accent2:#7c9fff; --warn:#ffb86b; --good:#8fe388; --bad:#ff7a90;
+    --chip:#223140; --radius:14px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f5f7fa; --panel:#ffffff; --panel2:#f0f3f7; --ink:#15202b; --muted:#53657a;
+      --line:#dde4ec; --accent:#0a8f84; --accent2:#3b63d6; --chip:#eef3f9; }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px 80px}
+  header.hero{padding:56px 20px 40px;background:
+    radial-gradient(1200px 400px at 20% -10%, rgba(77,182,172,.18), transparent 60%),
+    radial-gradient(1000px 400px at 90% -20%, rgba(124,159,255,.16), transparent 60%);
+    border-bottom:1px solid var(--line)}
+  .hero .wrap{padding-bottom:0}
+  .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--accent);font-weight:700}
+  h1{font-size:2.5rem;line-height:1.1;margin:.3em 0 .2em;font-weight:800}
+  .tag{color:var(--muted);font-size:1.05rem;margin:0 0 22px;max-width:70ch}
+  .liveq{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:var(--radius);padding:16px 20px;margin:18px 0 0}
+  .liveq .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .liveq q{display:block;font-size:1.15rem;font-style:italic;margin-top:6px}
+  nav.topnav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);
+    background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  nav.topnav .wrap{display:flex;align-items:center;gap:6px 14px;padding:9px 20px;flex-wrap:wrap}
+  nav.topnav .navlabel{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;flex:0 0 auto;margin-right:2px}
+  nav.topnav .navlinks{display:flex;flex-wrap:wrap;gap:2px}
+  nav.topnav a{font-size:.86rem;color:var(--ink);padding:5px 11px;border-radius:8px;white-space:nowrap;line-height:1.3}
+  nav.topnav a:hover{background:var(--chip);color:var(--accent);text-decoration:none}
+  section{scroll-margin-top:58px}
+  section{margin:44px 0 0}
+  h2{font-size:1.7rem;margin:0 0 6px;font-weight:800;scroll-margin-top:16px}
+  h2 .n{color:var(--accent);font-weight:800}
+  .lead{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin:16px 0}
+  .round{border-top:4px solid var(--accent)}
+  .round h3{font-size:1.3rem;margin:0 0 2px}
+  .round .sub{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+  .pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);margin-left:8px;vertical-align:middle}
+  .pill.tech{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+  .block{margin:14px 0}
+  .block h4{margin:0 0 6px;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .repro{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+  .grad{border-left:4px solid var(--good);background:color-mix(in srgb,var(--good) 8%,var(--panel2));
+    border-radius:8px;padding:12px 16px;margin-top:6px}
+  .grad b{color:var(--good)}
+  .bonus{border-left:4px solid var(--accent2);background:color-mix(in srgb,var(--accent2) 9%,var(--panel2));
+    border-radius:8px;padding:12px 16px;margin-top:6px}
+  .bonus b{color:var(--accent2)}
+  details{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--panel2);overflow:hidden}
+  details>summary{cursor:pointer;padding:11px 16px;font-weight:600;list-style:none;display:flex;align-items:center;gap:10px}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::before{content:"▸";color:var(--accent);font-size:1rem;transition:transform .15s}
+  details[open]>summary::before{transform:rotate(90deg)}
+  details .body{padding:0 16px 14px 42px;color:var(--ink)}
+  .hint-tier{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);margin-right:8px}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em}
+  code{background:var(--chip);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  pre{background:#0b1016;color:#d7e2ee;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:.86rem;line-height:1.5}
+  @media (prefers-color-scheme: light){pre{background:#0f1622;color:#e6eef8}}
+  pre .c{color:#7f8ea3}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.steps>li{counter-increment:s;position:relative;padding:12px 0 12px 48px;border-bottom:1px dashed var(--line)}
+  ol.steps>li:last-child{border-bottom:0}
+  ol.steps>li>b:first-of-type{color:var(--ink)}
+  ol.steps ul.sub{margin:9px 0 3px;padding-left:20px}
+  ol.steps ul.sub li{margin:5px 0;padding:0;border:0;list-style:disc;color:var(--ink)}
+  ol.steps ul.sub code{font-size:.85em}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;
+    background:var(--accent);color:#04201d;font-weight:800;display:grid;place-items:center;font-size:.9rem}
+  ol.rounds-list{list-style:none;margin:0;padding:0}
+  ol.rounds-list>li{display:flex;gap:12px;align-items:baseline;padding:8px 2px;border-bottom:1px solid var(--line)}
+  ol.rounds-list>li:last-child{border-bottom:0}
+  ol.rounds-list .rnum{flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);border:none;color:#04201d;font-weight:800;
+    display:grid;place-items:center;font-size:.8rem;position:relative;top:3px}
+  ol.rounds-list .weak{font-weight:600;line-height:1.45}
+  ol.rounds-list .cap{color:var(--muted);font-size:.9rem;margin-top:3px}
+  ol.rounds-list .cap b{color:var(--accent);font-weight:700}
+  ol.howto{margin:8px 0 2px;padding-left:22px}
+  ol.howto li{margin:6px 0}
+  .genie{border-left:4px solid var(--accent2);background:color-mix(in srgb,var(--accent2) 8%,var(--panel2));
+    border-radius:8px;padding:10px 14px;margin-top:8px;font-size:.95rem}
+  .genie .lbl{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--accent2);font-weight:700}
+  .docs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .docs a{background:var(--chip);border:1px solid var(--line);padding:5px 11px;border-radius:8px;font-size:.84rem;color:var(--ink)}
+  .docs a:hover{border-color:var(--accent2);text-decoration:none}
+  .docs a::before{content:"↗";margin-right:6px;color:var(--accent2);font-weight:700}
+  table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.93rem}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+  .feat{display:grid;grid-template-columns:1fr;gap:14px}
+  .feat .f{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .feat .f h4{margin:0 0 4px;font-size:1.05rem}
+  .feat .f p{margin:0 0 4px;color:var(--muted);font-size:.93rem}
+  .callout{border:1px solid var(--line);border-left:4px solid var(--warn);background:color-mix(in srgb,var(--warn) 7%,var(--panel));
+    border-radius:10px;padding:14px 18px;margin:16px 0}
+  .callout.integrity{border-left-color:var(--accent)}
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+  .kbd{background:var(--chip);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-size:.82em;font-family:ui-monospace,monospace}
+  /* team banner */
+  .teamcard{border-left:4px solid var(--accent);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px}
+  .teamcard-name{font-size:1.1rem;font-weight:800}
+  .teamcard-name b{color:var(--accent)}
+  .teamcard-members{color:var(--muted);font-size:.95rem}
+  /* checkpoint questions */
+  .qbox{border:1px solid var(--line);border-left:4px solid var(--warn);background:color-mix(in srgb,var(--warn) 6%,var(--panel2));border-radius:10px;padding:14px 18px;margin-top:14px}
+  .qbox-h{margin:0;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .qbox-sub{margin:4px 0 10px;color:var(--muted);font-size:.86rem}
+  .qstat{font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.02em;text-transform:none}
+  .q{margin:12px 0 0;padding-top:12px;border-top:1px dashed var(--line)}
+  .q.first{border-top:0;padding-top:4px}
+  .qlabel{display:block;font-weight:600;margin-bottom:6px}
+  .qlabel .qnum{color:var(--accent);font-weight:800;margin-right:5px}
+  .ans{width:100%;min-height:52px;resize:vertical;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:.95rem}
+  .ans:focus{outline:none;border-color:var(--accent2)}
+  .qhint{margin-top:8px}
+  .hintbadge{font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent);border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));padding:2px 8px;border-radius:999px;margin-left:8px}
+  @media print{body{background:#fff;color:#000}.hero{background:#fff}details[open] .body,details .body{display:block}nav.topnav{display:none}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">FGF × Databricks · Enablement Hackathon</div>
+    <h1>Agent&nbsp;Ops War&nbsp;Room</h1>
+    <p class="tag">You've inherited a <b>live, failing</b> Sales Campaign &amp; Opportunity Agent. It answers business questions over retail sales data, but every layer is broken or missing in a different way. Your squad is tasked with diagnosing and hardening it, one challenge at a time, until it's a real-time, remembered, governed, self-healing, production-grade agent.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section id="team">
+  <div class="card teamcard">
+    <div class="teamcard-name">Team <b>team6</b></div>
+    <div class="teamcard-members">Rahul Saravanan · Jayanth Philip · Jay Shah · Ayush Gupta · Mahyar Jaberi</div>
+  </div>
+</section>
+
+<section id="setup">
+  <h2>Setup</h2>
+  <p class="lead">Do this once per team before Challenge 1. These steps spell out every click — if you've never used Databricks, just follow them in order. Pick one teammate as the <b>driver</b> to run the terminal commands (steps marked <span class="pill">Driver</span>); everyone else follows along in the UI.</p>
+  <div class="callout"><b>Before you start:</b> in the commands below, replace <code>&lt;your-team&gt;</code> with your team name (e.g. <code>team1</code>), <code>&lt;your-email&gt;</code> with your Databricks login email, and <code>&lt;your-warehouse-id&gt;</code> with the ID you copy in Step 2. Wherever you see <code>teamN</code>, it means your team (e.g. <code>team1</code>). Type terminal commands one line at a time.</div>
+  <div class="card">
+    <ol class="steps">
+      <li><b>Open the project as a Git folder.</b>
+        <ul class="sub">
+          <li>In the left sidebar, click <b>Workspace</b>.</li>
+          <li>Click the blue <b>Create</b> button (top-right) → <b>Git folder</b>.</li>
+          <li>In <b>Git repository URL</b>, paste <code>https://github.com/subhannita1994/fgf-agent-ops-war-room</code> — the folder name fills in automatically — then click <b>Create Git folder</b>.</li>
+          <li>Open the new <code>fgf-agent-ops-war-room</code> folder. At the top, next to the folder name, is a branch button that reads <code>main</code>. Click it and switch to <b>your team's branch</b> (e.g. <code>team1</code>).</li>
+        </ul>
+      </li>
+      <li><b>Copy your SQL Warehouse ID.</b>
+        <ul class="sub">
+          <li>In the left sidebar, click <b>SQL Warehouses</b>.</li>
+          <li>Find your team's warehouse named <code>teamN-starter</code> and click it.</li>
+          <li>On the <b>Overview</b> tab, copy the <b>Warehouse ID</b> (a long string of letters and numbers). You'll paste it into the commands below.</li>
+        </ul>
+      </li>
+      <li><span class="pill">Driver</span> <b>Open the web terminal and deploy the stack.</b>
+        <ul class="sub">
+          <li>In your Git folder, open any notebook, and in the compute dropdown (top-right) attach it to <b>Serverless</b>.</li>
+          <li>At the <b>bottom-right</b> of the screen, click the <b>web terminal</b> icon to open a terminal.</li>
+          <li>Run these two commands, one line at a time:</li>
+        </ul>
+        <pre>cd /Workspace/Users/&lt;your-email&gt;/fgf-agent-ops-war-room
+databricks bundle deploy --var team=&lt;your-team&gt; --var warehouse_id=&lt;your-warehouse-id&gt;</pre>
+        <ul class="sub"><li>Wait until it finishes with no errors.</li></ul>
+      </li>
+      <li><b>Confirm the deploy created three things.</b>
+        <ul class="sub">
+          <li>Left sidebar → <b>Jobs &amp; Pipelines</b>: you should see a job <code>teamN-nightly-refresh</code> and a pipeline <code>teamN-sales-orders</code>.</li>
+          <li>Top-right <b>9-dots</b> menu (beside your initials) → <b>Databricks Apps</b>: you should see <code>teamN-sales-agent</code>. It will say <b>Stopped</b> for now — that's expected.</li>
+        </ul>
+      </li>
+      <li><b>Load the demo data.</b> In the Git folder, open <code>data/00_seed_sales_orders</code> and click <b>Run all</b> at the top. When it finishes (a few minutes), open <b>Catalog</b> in the left sidebar → your catalog → schema <code>teamN</code>: you should see <b>16 tables</b> and <b>1 volume</b> named <code>landing</code>.</li>
+      <li><b>Create the agent's tools.</b> Open <code>tools/01_create_uc_functions</code> and click <b>Run all</b>. Back in <b>Catalog → <code>teamN</code> → Functions</b>, you should see <b>9 functions</b>.</li>
+      <li><b>Give the app permission to your data.</b> Open <code>setup/01_grant_app</code> and click <b>Run all</b>. This grants the app's service principal access to your schema.</li>
+      <li><span class="pill">Driver</span> <b>Start the app.</b> Back in the web terminal, run:
+        <pre>databricks bundle run sales_agent --var team=&lt;your-team&gt; --var warehouse_id=&lt;your-warehouse-id&gt;</pre>
+      </li>
+      <li><b>Open the app and test it.</b> Top-right <b>9-dots → Databricks Apps → <code>teamN-sales-agent</code></b>. Wait until the status shows <b>Running</b>, then click the app URL to open it. Click any question in the left sidebar — you should get an answer with a footer line. You're ready for <b>Challenge 1</b>.</li>
+    </ol>
+  </div>
+  <div class="callout"><b>Tip:</b> the app's sidebar has the full question bank as buttons, an <b>“Alert me if it gets worse”</b> button, and a <b>Run health check</b> button. These are your instruments all afternoon.</div>
+</section>
+
+<!-- ROUND 1 -->
+<section id="r1">
+  <h2><span class="n">Challenge 1:</span> Genie ZeroOps</h2>
+  <div class="card round">
+    <h3>Something upstream broke, and nobody was paged <span class="pill tech">Genie ZeroOps</span></h3>
+    <p class="sub">Goal: Find out which part of the data pipeline broke and why. Rather than digging through logs and run histories yourself, you'll use <b>Genie ZeroOps</b>.</p>
+
+    <div class="block">
+      <h4>Reproduce it</h4>
+      <div class="repro">Run the <code>teamN-nightly-refresh</code> job and watch it <b>fail</b>. Because the job failed, no fresh data reaches the agent, so its answers are stuck on old data.</div>
+    </div>
+
+    <div class="block">
+      <h4>Investigate</h4>
+      <p>Before changing any code, let <b>Genie ZeroOps</b> do the detective work — point it at the failed <code>teamN-nightly-refresh</code> job and have it find the root cause. Then apply the fix and push it to your team branch.</p>
+    </div>
+
+    <div class="qbox">
+      <h4 class="qbox-h">Checkpoint questions <span class="qstat" data-round="r1"></span></h4>
+      <p class="qbox-sub">Answer these before you pass. Stuck? Reveal a hint — hint usage is recorded.</p>
+      <div class="q first">
+        <label class="qlabel" for="r1q1"><span class="qnum">Q1.</span>Which part of the code needed to be fixed?<span class="hintbadge" data-badge="r1q1" hidden>Hint used</span></label>
+        <textarea id="r1q1" class="ans" data-id="r1q1" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r1q1"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">You can look into the failing SDP's error message.</div></details>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="r1q2"><span class="qnum">Q2.</span>Which 2 tables had to be refreshed fully in the <code>sales_orders</code> pipeline?<span class="hintbadge" data-badge="r1q2" hidden>Hint used</span></label>
+        <textarea id="r1q2" class="ans" data-id="r1q2" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r1q2"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">After the code fix, use Genie ZeroOps to update the bad landing file in <code>sales_order_header/daily_drop_*.json</code>.</div></details>
+      </div>
+    </div>
+
+    <div class="grad">🏁 <b>Pass this round when</b> the <code>nightly-refresh</code> pipeline runs successfully end to end.</div>
+
+    <div class="docs">
+      <a href="https://www.databricks.com/blog/introducing-genie-zeroops">Genie ZeroOps</a>
+    </div>
+  </div>
+</section>
+
+<!-- ROUND 2 -->
+<section id="r2">
+  <h2><span class="n">Challenge 2:</span> Lakehouse//RT</h2>
+  <div class="card round">
+    <h3>Fresh data lands, but the agent is slow and behind <span class="pill tech">Lakehouse//RT</span></h3>
+    <p class="sub">Goal: Make the live questions answer on current data, faster.</p>
+
+    <div class="block">
+      <h4>Reproduce it</h4>
+      <div class="repro">Ask <b>Q2</b> and note the execution time in the footer (e.g. <span class="mono">SQL 1,874 ms</span>). Compare how often data arrives with how fresh the agent's answers feel.</div>
+    </div>
+
+    <div class="block">
+      <h4>Investigate</h4>
+      <p>Aim for Q2 to come back <b>noticeably faster</b>. Work out what's making it slow, and how to get there.</p>
+    </div>
+
+    <div class="qbox">
+      <h4 class="qbox-h">Checkpoint questions <span class="qstat" data-round="r2"></span></h4>
+      <p class="qbox-sub">Answer these before you pass. Stuck? Reveal a hint — hint usage is recorded.</p>
+      <div class="q first">
+        <label class="qlabel" for="r2q1"><span class="qnum">Q1.</span>Which materialized views did you optimize?<span class="hintbadge" data-badge="r2q1" hidden>Hint used</span></label>
+        <textarea id="r2q1" class="ans" data-id="r2q1" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r2q1"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">Liquid clustering should not be a one-off operation on the views — it should live in the sales-order SDP definition.</div></details>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="r2q2"><span class="qnum">Q2.</span>What was the improvement in latency that you observed?</label>
+        <textarea id="r2q2" class="ans" data-id="r2q2" rows="2" placeholder="Type your answer…"></textarea>
+      </div>
+    </div>
+
+    <div class="grad">🏁 <b>Pass this round when</b> Q2 responds noticeably faster <i>and</i> answers on current data.</div>
+
+    <div class="docs">
+      <a href="https://docs.databricks.com/aws/en/compute/sql-warehouse/warehouse-types#performance-differences-between-sql-warehouse-types">SQL warehouse types</a>
+    </div>
+  </div>
+</section>
+
+<!-- ROUND 3 -->
+<section id="r3">
+  <h2><span class="n">Challenge 3:</span> Lakebase</h2>
+  <div class="card round">
+    <h3>The agent answers, then forgets the follow-up <span class="pill tech">Lakebase</span></h3>
+    <p class="sub">Goal: Durable, shared conversation memory that survives a restart and works across users.</p>
+
+    <div class="block">
+      <h4>Reproduce it</h4>
+      <div class="repro">Ask <b>Q9a</b> then <b>Q9b</b> on the app. <b>Refresh the app</b>, then ask <b>Q9c</b>. It answers as if it has no idea what you were just discussing.</div>
+    </div>
+
+    <div class="block">
+      <h4>Investigate</h4>
+      <p>Find where the app keeps conversation history today, and why that location doesn't survive a restart or spread across multiple workers.</p>
+    </div>
+
+    <div class="qbox">
+      <h4 class="qbox-h">Checkpoint questions <span class="qstat" data-round="r3"></span></h4>
+      <p class="qbox-sub">Answer these before you pass. Stuck? Reveal a hint — hint usage is recorded.</p>
+      <div class="q first">
+        <label class="qlabel" for="r3q1"><span class="qnum">Q1.</span>Where was the app originally storing the session IDs of the conversations?<span class="hintbadge" data-badge="r3q1" hidden>Hint used</span></label>
+        <textarea id="r3q1" class="ans" data-id="r3q1" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r3q1"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">Look into the app.</div></details>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="r3q2"><span class="qnum">Q2.</span>Is the session unique to every user visiting the app?</label>
+        <textarea id="r3q2" class="ans" data-id="r3q2" rows="2" placeholder="Type your answer…"></textarea>
+      </div>
+    </div>
+
+    <div class="grad">🏁 <b>Pass this round when</b> old conversations are retained even after you refresh the app URL.</div>
+
+    <div class="docs">
+      <a href="https://docs.databricks.com/aws/en/oltp/">Lakebase (managed Postgres)</a>
+      <a href="https://docs.databricks.com/aws/en/dev-tools/databricks-apps/resources">App resources</a>
+      <a href="https://docs.databricks.com/aws/en/dev-tools/databricks-apps/">Databricks Apps</a>
+    </div>
+  </div>
+</section>
+
+<!-- ROUND 4 -->
+<section id="r4">
+  <h2><span class="n">Challenge 4:</span> Unity Gateway</h2>
+  <div class="card round">
+    <h3>Ungoverned model calls, runaway cost, leaked PII <span class="pill tech">Unity Gateway</span></h3>
+    <p class="sub">Goal: Put every model call behind a governed path.</p>
+
+    <div class="block">
+      <h4>Reproduce it</h4>
+      <div class="repro">Ask <b>Q11</b>. Oh no — you get a buyer's raw personal contact details (PII alert!).</div>
+    </div>
+
+    <div class="block">
+      <h4>Investigate</h4>
+      <p>Aim for two outcomes: the buyer's phone number comes back <b>masked</b> (no raw PII leaks), and model usage is held in check by <b>rate limits</b> so token cost stays under control. How you get there is up to you.</p>
+    </div>
+
+    <div class="qbox">
+      <h4 class="qbox-h">Checkpoint questions <span class="qstat" data-round="r4"></span></h4>
+      <p class="qbox-sub">Answer these before you pass. Stuck? Reveal a hint — hint usage is recorded.</p>
+      <div class="q first">
+        <label class="qlabel" for="r4q1"><span class="qnum">Q1.</span>Where would you set a fallback model endpoint?<span class="hintbadge" data-badge="r4q1" hidden>Hint used</span></label>
+        <textarea id="r4q1" class="ans" data-id="r4q1" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r4q1"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">Fallback models are routed to when the primary model is unavailable.</div></details>
+      </div>
+      <div class="q">
+        <label class="qlabel" for="r4q2"><span class="qnum">Q2.</span>Where can you observe metrics such as queries or tokens per minute?<span class="hintbadge" data-badge="r4q2" hidden>Hint used</span></label>
+        <textarea id="r4q2" class="ans" data-id="r4q2" rows="2" placeholder="Type your answer…"></textarea>
+        <details class="qhint" data-hint="r4q2"><summary><span class="hint-tier">Hint</span> Reveal</summary><div class="body">Model services can be monitored in the same set of pages — no custom dashboard needed.</div></details>
+      </div>
+    </div>
+
+    <div class="grad">🏁 <b>Pass this round when</b> a runaway caller on Q1 gets <b>throttled</b> and the phone number in Q11 comes back <b>masked</b>.</div>
+
+    <div class="docs">
+      <a href="https://docs.databricks.com/aws/en/ai-gateway/">Unity Gateway</a>
+      <a href="https://docs.databricks.com/aws/en/ai-gateway/configure-ai-gateway-endpoints">Rate limits &amp; guardrails</a>
+      <a href="https://docs.databricks.com/aws/en/machine-learning/model-serving/">Model Serving</a>
+      <a href="https://docs.databricks.com/aws/en/ai-gateway/inference-tables">Inference tables (audit)</a>
+    </div>
+  </div>
+</section>
+
+<!-- ROUND 5 -->
+<section id="r5">
+  <h2><span class="n">Challenge 5:</span> Databricks Apps <span class="pill">Bonus / Take-home</span></h2>
+  <div class="card round">
+    <h3>“Alert me” dies when the tab closes <span class="pill tech">Databricks Apps</span></h3>
+    <p class="sub">Goal: Durable alerting that keeps watching with no one looking and reaches the whole team.</p>
+
+    <div class="block">
+      <h4>Reproduce it</h4>
+      <div class="repro">Ask <b>Q13</b> or click <b>“Alert me”</b>. It works while you watch — but close or refresh the tab and it stops, and only <i>you</i> ever saw it.</div>
+    </div>
+
+    <div class="block">
+      <h4>Investigate</h4>
+      <p>Aim for an alert that keeps running after the browser tab closes and reaches the whole team — not just the person who clicked — with no one watching. The in-session loop can't do that; it's up to you to find a durable, scheduled way to get there.</p>
+    </div>
+
+    <div class="grad">🏁 <b>Pass this round when</b> a scheduled, outside-the-session mechanism replaces the in-browser loop and keeps alerting with the tab closed.</div>
+
+    <div class="docs">
+      <a href="https://docs.databricks.com/aws/en/sql/user/alerts/">Databricks SQL Alerts</a>
+      <a href="https://docs.databricks.com/aws/en/jobs/schedule-jobs">Scheduled jobs</a>
+      <a href="https://docs.databricks.com/aws/en/admin/users-groups/service-principals">Service principals</a>
+      <a href="https://docs.databricks.com/aws/en/dev-tools/databricks-apps/">Databricks Apps</a>
+    </div>
+  </div>
+</section>
+
+<!-- RULES -->
+<section id="rules">
+  <h2>Ground rules</h2>
+  <div class="card">
+    <ul>
+      <li><b>Synthetic data only.</b> Everything in this environment is generated for the workshop.</li>
+      <li><b>Work in your team branch.</b> Push your fixes there so teammates can pick them up — the driver deploys, everyone contributes.</li>
+      <li><b>Get each challenge checked before moving on.</b> After you complete a challenge, have a coordinator verify it before you start the next one.</li>
+      <li><b>In your real workspaces, permissions may differ from what you have been granted for the hackathon</b> Check in with your workspace admin to know more about the permissions and resources available to you.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Agent Ops War Room · FGF × Databricks enablement hackathon. Doc links point to Databricks documentation; preview features (ZeroOps, Lakehouse//RT) may appear differently per workspace — ask your facilitator. Good luck. 🔧</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var KEY = "warroom-worksheet-v1";
+  var ROUNDS = [
+    {id:"r1", hints:["r1q1","r1q2"]},
+    {id:"r2", hints:["r2q1"]},
+    {id:"r3", hints:["r3q1"]},
+    {id:"r4", hints:["r4q1","r4q2"]}
+  ];
+
+  var state;
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e) { state = {}; }
+  state.answers = state.answers || {};
+  state.hints = state.hints || {};
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+
+  // Keep typed answers across reloads (saved only in this browser).
+  document.querySelectorAll("textarea.ans").forEach(function(t){
+    var id = t.getAttribute("data-id");
+    if (state.answers[id] != null) t.value = state.answers[id];
+    t.addEventListener("input", function(){ state.answers[id] = t.value; save(); });
+  });
+
+  // Record hint reveals (one-way) and show the per-question badge + per-round tally.
+  function markHint(id){ var b = document.querySelector('[data-badge="' + id + '"]'); if (b) b.hidden = false; }
+  document.querySelectorAll("details.qhint").forEach(function(d){
+    var id = d.getAttribute("data-hint");
+    if (state.hints[id]) markHint(id);
+    d.addEventListener("toggle", function(){
+      if (d.open && !state.hints[id]) { state.hints[id] = true; save(); markHint(id); updateTallies(); }
+    });
+  });
+
+  function updateTallies(){
+    ROUNDS.forEach(function(r){
+      var used = r.hints.filter(function(id){ return state.hints[id]; }).length;
+      var el = document.querySelector('.qstat[data-round="' + r.id + '"]');
+      if (el) el.textContent = r.hints.length ? ("· hints used " + used + "/" + r.hints.length) : "";
+    });
+  }
+
+  updateTallies();
+})();
+</script>
+
+</body>
+</html>
