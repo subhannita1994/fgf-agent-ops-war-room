@@ -12,14 +12,6 @@ You are on the incident response team for a customer-facing agent stack. Every l
 * The app needs memory, guardrails, and service connectivity.
 * Governance and operational health must hold under pressure.
 
-## The live question
-
-Start with:
-
-* Which customers have open sales orders for ACE Bakery below margin right now, during today's promo — and alert me if it gets worse.
-
-Then work forward through the rest of [QUESTIONS.md](./QUESTIONS.md).
-
 ## The five rounds
 
 * Round 1: ZeroOps triage
@@ -32,17 +24,31 @@ Every round ends the same way: add the new component to the app as a resource in
 
 Every agent reply has a footer showing data as-of time, SQL ms, warehouse, model endpoint, and tokens for the turn. Watch it change as each fix lands.
 
-## Deploy your stack
+## One-time setup
 
-1. Open the web terminal in your team branch of this Git folder.
-2. Deploy the bundle:
-   `databricks bundle deploy --var team=<your-team> --var warehouse_id=<warehouse-id>`
-   Your facilitator gives you the warehouse ID. Add `--var catalog=<catalog>` if your workshop catalog is not the default.
-3. Run `data/00_seed_sales_orders` (whoever runs it owns the team schema).
-4. Run `tools/01_create_uc_functions`.
-5. Run `setup/01_grant_app`. It grants the app's service principal USE SCHEMA, SELECT and EXECUTE on your schema. Run it as the schema owner from step 3 (or someone with MANAGE on the schema).
-6. Start the app: `databricks bundle run sales_agent --var team=<your-team> --var warehouse_id=<warehouse-id>`
-7. Run the job `<your-team>-nightly-refresh`, then ask the app Q1.
+Do this once per team before Round 1. Pick a **driver** who runs the terminal commands; everyone else can follow in the UI.
+
+1. Sign in to the workspace. Create a **Git folder** from `github.com/subhannita1994/fgf-agent-ops-war-room`, then use the branch picker to switch from `main` to **your team branch** (e.g. `team1`).
+2. Open **SQL Warehouses** and find your team's starter warehouse (`teamN-starter`). Copy its **Warehouse ID** — your facilitator will confirm which one is yours.
+3. **(Driver)** Open any notebook in the Git folder, attach to serverless, and launch the **web terminal** (bottom-right). Then:
+
+   ```
+   # from your git folder
+   cd /Workspace/Users/<your-email>/fgf-agent-ops-war-room
+   databricks bundle deploy --var team=<your-team> --var warehouse_id=<your-warehouse-id>
+   ```
+
+4. Confirm the deploy created **Jobs & Pipelines** → `teamN-nightly-refresh` (job) and `teamN-sales-orders` (pipeline), and **Apps** → `teamN-sales-agent` (stopped for now).
+5. Run `data/00_seed_sales_orders` (all cells). Verify the pipeline ran cleanly and you see **16 tables + 1 volume** under your catalog / schema `teamN`.
+6. Run `tools/01_create_uc_functions`. Verify **9 functions** appear under `teamN`.
+7. Run `setup/01_grant_app` (all cells) to grant the app's service principal access to your schema.
+8. **(Driver)** Back in the web terminal, start the app:
+
+   ```
+   databricks bundle run sales_agent --var team=<your-team> --var warehouse_id=<your-warehouse-id>
+   ```
+
+9. Open **Apps** → `teamN-sales-agent` (status **Running**) and click any question in the sidebar — you should get an answer with a footer. You're ready for Round 1.
 
 ## Repo map
 
@@ -50,13 +56,9 @@ Every agent reply has a footer showing data as-of time, SQL ms, warehouse, model
 * `pipelines/` defines the medallion pipeline.
 * `tools/` creates Unity Catalog SQL functions for the agent.
 * `app/` contains the Streamlit chat application.
-* `checks/` contains round validation notebooks.
-* `rounds/` contains hints for each repair round.
-* `facilitator/` contains the hidden answer key and fault documentation.
 
 ## Ground rules
 
 * Synthetic data only.
 * Every resource is parameterized by `team` and `catalog`.
 * Dates stay relative to the current Toronto date.
-* Teams should not look in `facilitator/` during the workshop.
